@@ -185,7 +185,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiJ9...
 - [x] Phase 2 — Spring Security, JWT authentication, BCrypt password hashing
 - [x] Phase 3 — JUnit 5 unit tests, repository tests, MockMvc integration tests
 - [x] Phase 4 — Docker + Docker Compose
-- [ ] Phase 5 — Kafka async events (task assignment notifications)
+- [x] Phase 5 — Kafka async events (task assignment notifications)
 - [ ] Phase 6 — Redis caching
 - [ ] Phase 7 — Prometheus + Grafana observability
 - [ ] Phase 8 — GitHub Actions CI/CD pipeline

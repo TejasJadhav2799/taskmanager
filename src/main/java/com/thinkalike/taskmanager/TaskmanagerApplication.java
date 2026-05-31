@@ -15,5 +15,11 @@ public class TaskmanagerApplication {
 
 		// prints every bean Spring found — if User-related beans appear, scanning works
 		System.out.println("=== BEANS LOADED: " + ctx.getBeanDefinitionCount() + " ===");
+
+		// check if our Kafka beans are registered
+		System.out.println("TaskEventProducer bean exists: " +
+				ctx.containsBean("taskEventProducer"));
+		System.out.println("TaskEventConsumer bean exists: " +
+				ctx.containsBean("taskEventConsumer"));
 	}
 }

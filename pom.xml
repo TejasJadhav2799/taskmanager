@@ -34,11 +34,11 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!-- SPRING SECURITY TEST — for @WithMockUser -->
+		<!-- KAFKA — Spring's Kafka integration -->
+		<!-- gives you @KafkaListener, KafkaTemplate, @EnableKafka -->
 		<dependency>
-			<groupId>org.springframework.security</groupId>
-			<artifactId>spring-security-test</artifactId>
-			<scope>test</scope>
+			<groupId>org.springframework.kafka</groupId>
+			<artifactId>spring-kafka</artifactId>
 		</dependency>
 
 		<!-- POSTGRESQL DRIVER — connects JPA to your PostgreSQL database -->
@@ -79,13 +79,6 @@
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
-			<scope>test</scope>
-		</dependency>
-
-		<!-- SPRING BOOT TEST AUTOCONFIGURE — needed for @DataJpaTest, @WebMvcTest -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-test-autoconfigure</artifactId>
 			<scope>test</scope>
 		</dependency>
 

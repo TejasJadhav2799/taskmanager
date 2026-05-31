@@ -2,7 +2,9 @@ package com.thinkalike.taskmanager.service.impl;
 
 import com.thinkalike.taskmanager.dto.TaskRequest;
 import com.thinkalike.taskmanager.dto.TaskResponse;
+import com.thinkalike.taskmanager.event.TaskAssignedEvent;
 import com.thinkalike.taskmanager.exception.ResourceNotFoundException;
+import com.thinkalike.taskmanager.kafka.TaskEventProducer;
 import com.thinkalike.taskmanager.model.Project;
 import com.thinkalike.taskmanager.model.Task;
 import com.thinkalike.taskmanager.model.User;
@@ -24,6 +26,8 @@ public class TaskServiceImpl implements TaskService {
     private final TaskRepository taskRepository;
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
+    private final TaskEventProducer taskEventProducer;
+
 
     @Override
     public TaskResponse createTask(TaskRequest request) {
@@ -160,8 +164,6 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public TaskResponse assignTask(Long taskId, Long userId) {
-        // dedicated assign method — clean and explicit
-        // in Phase 2 we'll add: only project members can be assigned
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Task not found with id: " + taskId
@@ -173,7 +175,23 @@ public class TaskServiceImpl implements TaskService {
                 ));
 
         task.setAssignee(assignee);
-        return TaskResponse.from(taskRepository.save(task));
+        Task savedTask = taskRepository.save(task);
+
+        // publish event to Kafka AFTER successful save
+        // fire and forget — we don't wait for the consumer
+        TaskAssignedEvent event = TaskAssignedEvent.builder()
+                .taskId(savedTask.getId())
+                .taskTitle(savedTask.getTitle())
+                .assigneeId(assignee.getId())
+                .assigneeName(assignee.getName())
+                .assigneeEmail(assignee.getEmail())
+                .projectId(savedTask.getProject().getId())
+                .projectName(savedTask.getProject().getName())
+                .build();
+
+        taskEventProducer.publishTaskAssigned(event);
+
+        return TaskResponse.from(savedTask);
     }
 
     @Override
