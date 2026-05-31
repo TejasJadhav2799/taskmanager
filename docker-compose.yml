@@ -1,0 +1,55 @@
+services:
+
+  # POSTGRESQL DATABASE
+  postgres:
+    image: postgres:15-alpine
+    # alpine = smaller image size
+    container_name: taskmanager-postgres
+    environment:
+      POSTGRES_DB: taskmanagement
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+      # 5433 on your machine maps to 5432 inside container
+      # using 5433 to avoid conflict with your local PostgreSQL
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      # named volume — data persists when container restarts
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      # healthcheck ensures app waits for postgres to be ready
+      # before starting
+
+  # SPRING BOOT APPLICATION
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: taskmanager-app
+    ports:
+      - "8081:8081"
+    environment:
+      # override application.properties values
+      # these environment variables are read by Spring Boot automatically
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/taskmanagement
+      # "postgres" here is the service name above — Docker resolves it
+      # to the container's IP automatically
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      JWT_SECRET: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+      JWT_EXPIRATION: 86400000
+    depends_on:
+      postgres:
+        condition: service_healthy
+        # app won't start until postgres passes its healthcheck
+    restart: on-failure
+    # if app crashes it restarts automatically
+
+volumes:
+  postgres_data:
+  # named volume — survives container restarts
