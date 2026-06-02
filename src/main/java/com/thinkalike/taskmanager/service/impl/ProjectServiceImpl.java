@@ -9,7 +9,8 @@ import com.thinkalike.taskmanager.repository.ProjectRepository;
 import com.thinkalike.taskmanager.repository.UserRepository;
 import com.thinkalike.taskmanager.service.ProjectService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,6 +43,11 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "projects", key = "#id")
+    // @Cacheable checks Redis first
+    // key = "#id" means cache key is "projects::1", "projects::2" etc.
+    // if found in Redis — return immediately, skip DB entirely
+    // if not found — run the method, store result in Redis, return
     public ProjectResponse getProjectById(Long id) {
         Project project = projectRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(
@@ -57,6 +63,8 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    @Cacheable(value = "projects-by-owner", key = "#ownerId")
     public List<ProjectResponse> getProjectsByOwner(Long ownerId) {
         if (!userRepository.existsById(ownerId)) {
             throw new ResourceNotFoundException("User not found with id: " + ownerId);
@@ -70,6 +78,10 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
+    @CacheEvict(value = {"projects", "projects-by-owner"}, allEntries = true)
+    // @CacheEvict removes stale cache entries when data changes
+    // allEntries = true clears ALL entries in these caches
+    // so next GET request goes to DB and gets fresh data
     public List<ProjectResponse> updateProject(Long id, ProjectRequest request) {
         Project project = projectRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Project not found with id: " + id));
 
@@ -95,6 +107,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
+    @CacheEvict(value = {"projects", "projects-by-owner"}, allEntries = true)
     public void deleteProject(Long id) {
         if (!projectRepository.existsById(id)) {
             throw new ResourceNotFoundException("Project not found with id: " + id);

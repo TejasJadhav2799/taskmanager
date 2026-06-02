@@ -5,13 +5,18 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter
 @Builder
 @AllArgsConstructor
-public class TaskResponse {
+public class TaskResponse implements Serializable {
+
+    // Serializable tells Java this object can be converted
+    // to bytes for storage — required for Redis caching
+    private static final long serialVersionUID = 1L;
 
     private Long id;
     private String title;

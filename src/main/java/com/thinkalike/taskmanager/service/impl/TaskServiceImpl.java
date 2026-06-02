@@ -13,6 +13,8 @@ import com.thinkalike.taskmanager.repository.TaskRepository;
 import com.thinkalike.taskmanager.repository.UserRepository;
 import com.thinkalike.taskmanager.service.TaskService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -69,6 +71,11 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "tasks", key = "#id")
+    // @Cacheable checks Redis first
+    // key = "#id" means cache key is "tasks::1", "tasks::2" etc.
+    // if found in Redis — return immediately, skip DB entirely
+    // if not found — run the method, store result in Redis, return
     public TaskResponse getTaskById(Long id) {
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(
@@ -88,6 +95,7 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "tasks-by-project", key = "#projectId")
     public List<TaskResponse> getTasksByProject(Long projectId) {
         if (!projectRepository.existsById(projectId)) {
             throw new ResourceNotFoundException(
@@ -124,6 +132,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    @CacheEvict(value = {"tasks", "tasks-by-project"}, allEntries = true)
     public TaskResponse updateTask(Long id, TaskRequest request) {
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(
@@ -153,6 +162,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    @CacheEvict(value = {"tasks", "tasks-by-project"}, allEntries = true)
     public TaskResponse updateTaskStatus(Long id, Task.TaskStatus status) {
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(
@@ -163,6 +173,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    @CacheEvict(value = {"tasks", "tasks-by-project"}, allEntries = true)
     public TaskResponse assignTask(Long taskId, Long userId) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new ResourceNotFoundException(
@@ -195,6 +206,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    @CacheEvict(value = {"tasks", "tasks-by-project"}, allEntries = true)
     public void deleteTask(Long id) {
         if (!taskRepository.existsById(id)) {
             throw new ResourceNotFoundException(
