@@ -1,0 +1,11 @@
+global:
+  scrape_interval: 15s
+  # every 15 seconds Prometheus calls your app's /actuator/prometheus
+  # and stores all the metrics it finds
+
+scrape_configs:
+  - job_name: 'taskmanager'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['app:8081']
+        # 'app' is the Docker service name — resolves automatically

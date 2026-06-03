@@ -47,6 +47,18 @@
 			<artifactId>spring-boot-starter-data-redis</artifactId>
 		</dependency>
 
+		<!-- ACTUATOR — exposes health, metrics, info endpoints -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+
+		<!-- MICROMETER PROMETHEUS — formats metrics for Prometheus to scrape -->
+		<dependency>
+			<groupId>io.micrometer</groupId>
+			<artifactId>micrometer-registry-prometheus</artifactId>
+		</dependency>
+
 		<!-- POSTGRESQL DRIVER — connects JPA to your PostgreSQL database -->
 		<dependency>
 			<groupId>org.postgresql</groupId>
