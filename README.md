@@ -188,7 +188,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiJ9...
 - [x] Phase 5 — Kafka async events (task assignment notifications)
 - [x] Phase 6 — Redis caching
 - [x] Phase 7 — Prometheus + Grafana observability
-- [ ] Phase 8 — GitHub Actions CI/CD pipeline
+- [x] Phase 8 — GitHub Actions CI/CD pipeline
 
 ## Author
 
